@@ -265,3 +265,280 @@ Dựa trên các Yêu cầu Nghiệp vụ (BR), dưới đây là chi tiết cá
 * **FR-ADM-03 (Báo cáo Thống kê):** Xuất các biểu đồ & bảng biểu báo cáo về: Doanh thu theo ngày/tần suất, Tổng số chuyến, Tỷ lệ hủy chuyến, và Báo cáo hiệu suất từng tài xế.
 
 </details>
+<details>
+<summary><b>Bước 7. Sơ Đồ Use Case Tổng Quan (Use Case Diagram)</b> [Bấm để xem]</summary>
+
+### Sơ Đồ Use Case Hệ Thống CAB System
+
+<img width="900" height="823" alt="lthdv-Copy of Page-1" src="https://github.com/user-attachments/assets/6b585ad5-a87a-423a-a295-8d20e267bd0e" />
+</details>
+<details>
+<summary><b>Bước 8. Đặc Tả Chi Tiết Các Use Case Quan Trọng (Use Case Specifications)</b> [Bấm để xem]</summary>
+
+### 1. Đặc tả Use Case "Đặt xe"
+
+**Tiền điều kiện:** Khách hàng đã đăng nhập thành công vào ứng dụng. Thiết bị di động đã bật vị trí (GPS).  
+**Hậu điều kiện:** Tạo chuyến đi thành công trên hệ thống. Trạng thái chuyến đi chuyển sang "Chờ tài xế nhận".  
+**Actor chính:** Khách hàng  
+**Actor phụ:** Không  
+
+#### Basic flow
+
+| Khách hàng | Hệ thống |
+| :--- | :--- |
+| 1. Chọn chức năng "Đặt xe". | 2. Tự động lấy vị trí hiện tại làm điểm đón và hiển thị bản đồ. |
+| 3. Nhập/chọn điểm đến và chọn loại dịch vụ xe (Xe 4 chỗ, Xe 7 chỗ, Xe máy). | 4. Tính toán quãng đường, ước tính thời gian di chuyển và hiển thị giá tiền cho từng loại dịch vụ. |
+| 5. Chọn phương thức thanh toán (Tiền mặt hoặc Cổng điện tử) và xác nhận "Đặt xe". | 6. Kiểm tra tính hợp lệ của yêu cầu đặt xe. |
+| | 7. Lưu thông tin chuyến đi vào CSDL với trạng thái "Chờ tài xế nhận". |
+| | 8. Kích hoạt luồng phát thông báo tìm tài xế ở gần điểm đón. |
+| | 9. Hiển thị màn hình chờ tài xế nhận chuyến. |
+
+#### Alternative flow
+* **3.1 Khách hàng muốn thay đổi điểm đón:**
+  1. Khách hàng ghim vị trí mới hoặc nhập địa chỉ điểm đón thủ công.
+  2. Hệ thống cập nhật lại vị trí điểm đón trên bản đồ.
+  3. Quay lại bước 4.
+* **5.1 Khách hàng nhập mã giảm giá (Voucher):**
+  1. Khách hàng chọn/nhập mã giảm giá.
+  2. Hệ thống kiểm tra điều kiện áp dụng mã và tự động tính lại tổng tiền.
+  3. Quay lại bước 5.
+
+#### Exception flow
+* **6.1 Hệ thống không định vị được vị trí GPS của khách hàng:**
+  1. Hệ thống hiển thị thông báo lỗi "Không thể lấy vị trí hiện tại, vui lòng kiểm tra bật GPS hoặc nhập địa chỉ thủ công".
+  2. Quay lại bước 3.
+* **8.1 Hết thời gian chờ mà không có tài xế nào nhận chuyến:**
+  1. Hệ thống hiển thị thông báo "Rất tiếc, hiện tại không có tài xế trống ở khu vực của bạn".
+  2. Hệ thống hủy yêu cầu đặt xe và quay lại màn hình trang chủ.
+
+---
+
+### 2. Đặc tả Use Case "Cập nhật tiến độ chuyến đi"
+
+**Tiền điều kiện:** Tài xế đã đăng nhập thành công vào hệ thống. Tài xế đã nhận chuyến đi của Khách hàng và đang trong luồng di chuyển.  
+**Hậu điều kiện:** Trạng thái chuyến đi được lưu và cập nhật liên tục trên CSDL. Thông báo và vị trí realtime được đồng bộ đến màn hình của Khách hàng.  
+**Actor chính:** Tài xế  
+**Actor phụ:** Khách hàng  
+
+#### Basic flow
+
+| Tài xế | Hệ thống |
+| :--- | :--- |
+| 1. Chọn chức năng "Bắt đầu đón khách" và di chuyển tới điểm đón. | 2. Cập nhật trạng thái chuyến đi sang "Tài xế đang đến" và bật định vị vị trí realtime của tài xế. |
+| 3. Chọn nút "Đã đến điểm đón" khi tới nơi. | 4. Cập nhật trạng thái chuyến đi sang "Tài xế đã tới điểm đón" và gửi thông báo nhắc Khách hàng ra xe. |
+| 5. Khách hàng lên xe, Tài xế chọn nút "Bắt đầu chuyến đi". | 6. Cập nhật trạng thái chuyến đi sang "Đang di chuyển" và hiển thị tuyến đường điều hướng đến điểm đến. |
+| 7. Di chuyển tới điểm trả khách và chọn nút "Hoàn thành chuyến đi". | 8. Cập nhật trạng thái chuyến đi sang "Chờ thanh toán". |
+| | 9. Tự động kích hoạt Use Case "Thanh toán". |
+| | 10. Hiển thị thông báo hoàn thành chuyến đi và màn hình tổng kết tiền cước. |
+
+#### Alternative flow
+* **3.1 Tài xế không tìm thấy khách hàng tại điểm đón:**
+  1. Tài xế chọn chức năng "Gọi điện / Nhắn tin cho Khách hàng".
+  2. Hệ thống kết nối cuộc gọi hoặc hiển thị màn hình chat bảo mật.
+  3. Tài xế trao đổi xác nhận lại vị trí đứng của khách hàng.
+  4. Quay lại bước 5.
+
+#### Exception flow
+* **5.1 Khách hàng không xuất hiện sau thời gian chờ quy định (Quá 10 phút):**
+  1. Tài xế chọn nút "Hủy chuyến do khách không đến".
+  2. Hệ thống kiểm tra thời gian chờ và vị trí GPS của tài xế tại điểm đón.
+  3. Hệ thống tính phí hủy chuyến (nếu có) áp dụng cho tài khoản Khách hàng.
+  4. Hệ thống cập nhật trạng thái chuyến đi sang "Đã hủy do khách không đến" và kết thúc use case.
+* **7.1 Xe gặp sự cố hoặc sự cố giao thông trên đường:**
+  1. Tài xế chọn nút "Báo cáo sự cố chuyến đi".
+  2. Hệ thống ghi nhận vị trí, thông báo cho Nhân viên vận hành hỗ trợ và cho phép Khách hàng/Tài xế hủy chuyến khẩn cấp.
+
+---
+
+### 3. Đặc tả Use Case "Thanh toán"
+
+**Tiền điều kiện:** Chuyến đi đã chuyển sang trạng thái "Chờ thanh toán" (Tài xế đã bấm hoàn thành chuyến đi).  
+**Hậu điều kiện:** Tiền cước được ghi nhận hoàn tất. Trạng thái chuyến đi cập nhật sang "Đã hoàn tất". Hóa đơn điện tử được lưu vào CSDL và gửi cho Khách hàng.  
+**Actor chính:** Khách hàng, Tài xế  
+**Actor phụ:** Cổng thanh toán (VNPAY/Momo/ZaloPay/Thẻ)  
+
+#### Basic flow
+
+| Actor | Hệ thống |
+| :--- | :--- |
+| 1. (Tài xế/Khách hàng) Xem số tiền thanh toán hiển thị trên ứng dụng. | 2. Hiển thị tổng tiền cước chi tiết (bao gồm phụ phí, mã giảm giá) và phương thức thanh toán đã chọn từ ban đầu. |
+| 3. Khách hàng thực hiện thanh toán bằng tiền mặt cho tài xế. | 4. Tài xế nhận tiền mặt và chọn "Xác nhận đã thu tiền". |
+| | 5. Kiểm tra và xác nhận giao dịch thành công. |
+| | 6. Cập nhật trạng thái chuyến đi sang "Đã hoàn tất". |
+| | 7. Cộng tiền vào tài khoản ví tài xế (sau khi trừ chiết khấu sàn). |
+| | 8. Hiển thị thông báo thanh toán thành công và hiển thị màn hình đánh giá chuyến đi cho Khách hàng. |
+
+#### Alternative flow
+* **3.1 Phương thức thanh toán là Cổng điện tử (Thẻ/Ví điện tử):**
+  1. Hệ thống tự động gửi yêu cầu trừ tiền đến Cổng thanh toán liên kết.
+  2. Cổng thanh toán xử lý và phản hồi kết quả "Giao dịch thành công".
+  3. Hệ thống tự động bỏ qua bước 3, 4 và nhảy thẳng đến bước 6.
+* **3.2 Khách hàng muốn chuyển từ Tiền mặt sang Thanh toán bằng Cổng điện tử / Mã QR:**
+  1. Khách hàng chọn "Đổi phương thức thanh toán".
+  2. Hệ thống hiển thị mã QR thanh toán động cho chuyến đi.
+  3. Khách hàng dùng ứng dụng ngân hàng/ví điện tử quét mã QR để chuyển khoản.
+  4. Sau khi nhận tín hiệu gạch nợ thành công, quay lại bước 6.
+
+#### Exception flow
+* **3.1.1 Cổng thanh toán điện tử báo lỗi hoặc tài khoản không đủ số dư:**
+  1. Hệ thống hiển thị thông báo "Thanh toán qua ví/thẻ thất bại. Vui lòng thử lại hoặc đổi sang thanh toán tiền mặt".
+  2. Khách hàng chọn thanh toán tiền mặt cho tài xế.
+  3. Quay lại bước 3 của Basic flow.
+
+---
+
+### 4. Đặc tả Use Case "Đăng ký / Đăng nhập"
+
+**Tiền điều kiện:** Người dùng (Khách hàng / Tài xế / NV Vận hành) đã mở ứng dụng hoặc truy cập vào hệ thống.  
+**Hậu điều kiện:** Hệ thống xác thực danh tính thành công, tạo phiên làm việc (Session/JWT Token) và chuyển người dùng đến giao diện tương ứng với vai trò.  
+**Actor chính:** Khách hàng, Tài xế, Nhân viên vận hành  
+**Actor phụ:** Hệ thống gửi SMS OTP / Email Firebase  
+
+#### Basic flow
+
+| Actor | Hệ thống |
+| :--- | :--- |
+| 1. Chọn chức năng "Đăng nhập" và nhập Số điện thoại / Email cùng Mật khẩu. | 2. Kiểm tra thông tin tài khoản trong cơ sở dữ liệu. |
+| | 3. Mật khẩu hợp lệ, hệ thống tạo mã token xác thực phiên đăng nhập. |
+| | 4. Cập nhật thời gian đăng nhập gần nhất của người dùng. |
+| | 5. Khởi tạo giao diện làm việc chính theo đúng quyền hạn/vai trò (Role) của tài khoản. |
+
+#### Alternative flow
+* **1.1 Đăng nhập bằng mã OTP qua Số điện thoại:**
+  1. Người dùng nhập Số điện thoại và chọn "Gửi mã OTP".
+  2. Hệ thống tạo và gửi mã OTP 6 chữ số qua SMS.
+  3. Người dùng nhập mã OTP nhận được.
+  4. Hệ thống đối soát mã OTP; nếu đúng, tự động đăng nhập và nhảy đến bước 4.
+* **1.2 Đăng ký tài khoản mới (Chưa có tài khoản):**
+  1. Tại màn hình đăng nhập, người dùng chọn "Đăng ký ngay".
+  2. Người dùng điền Họ tên, Số điện thoại, Email và Mật khẩu mới.
+  3. Hệ thống kiểm tra dữ liệu, gửi OTP kích hoạt tài khoản.
+  4. Người dùng nhập OTP thành công, hệ thống lưu tài khoản mới vào CSDL và tự động thực hiện Đăng nhập (Chuyển sang Bước 4).
+
+#### Exception flow
+* **2.1 Số điện thoại / Email hoặc Mật khẩu không chính xác:**
+  1. Hệ thống hiển thị thông báo "Thông tin đăng nhập không đúng, vui lòng kiểm tra lại".
+  2. Quay lại bước 1 để người dùng nhập lại.
+* **1.1.1 Mã OTP hết hạn hoặc nhập sai quá 3 lần:**
+  1. Hệ thống cảnh báo "Mã OTP không hợp lệ hoặc đã hết hạn".
+  2. Khóa chức năng gửi OTP trong 60 giây và yêu cầu người dùng bấm "Gửi lại OTP".
+
+---
+
+### 5. Đặc tả Use Case "Giám sát chuyến đi realtime"
+
+**Tiền điều kiện:** Nhân viên vận hành đã đăng nhập thành công vào hệ thống quản trị (Admin Portal). Có các chuyến đi đang diễn ra trên hệ thống.  
+**Hậu điều kiện:** Nhân viên nắm bắt được tọa độ, tuyến đường, thông tin tài xế - khách hàng và trạng thái hiện tại của chuyến đi để kịp thời xử lý khi có bất thường.  
+**Actor chính:** Nhân viên vận hành  
+**Actor phụ:** Không  
+
+#### Basic flow
+
+| Nhân viên vận hành | Hệ thống |
+| :--- | :--- |
+| 1. Truy cập vào phân hệ "Giám sát chuyến đi Realtime". | 2. Hiển thị bản đồ tổng quan khu vực kèm các icon chuyến đi đang hoạt động (Đang đón, Đang di chuyển). |
+| 3. Nhập mã chuyến đi / biển số xe / SĐT khách hàng vào thanh tìm kiếm hoặc chọn 1 chuyến đi trên bản đồ. | 4. Hiển thị chi tiết chuyến đi: Tọa độ GPS hiện tại của xe, vị trí đón/trả, thông tin Khách hàng, Tài xế và tốc độ di chuyển. |
+| | 5. Tự động đồng bộ vị trí xe trên bản đồ theo chu kỳ 3-5 giây/lần (thông qua WebSocket). |
+
+#### Alternative flow
+* **3.1 Lọc danh sách chuyến đi theo trạng thái hoặc khu vực:**
+  1. Nhân viên chọn bộ lọc (Ví dụ: "Chuyến đi bị hoãn quá 15 phút", "Khu vực Quận 1").
+  2. Hệ thống cập nhật bản đồ và danh sách chuyến đi thỏa mãn điều kiện lọc.
+  3. Quay lại bước 4.
+
+#### Exception flow
+* **5.1 Mất tín hiệu GPS hoặc mất kết nối với thiết bị tài xế:**
+  1. Hệ thống phát hiện thiết bị tài xế không gửi tọa độ quá 3 phút.
+  2. Hệ thống đánh dấu chuyến đi cảnh báo màu đỏ ("Mất kết nối GPS") và gửi thông báo tín hiệu nguy hiểm cho Nhân viên vận hành.
+  3. Nhân viên vận hành chọn chức năng "Liên hệ khẩn cấp" để gọi cho tài xế hoặc khách hàng kiểm tra độ an toàn.
+</details>
+<details>
+<summary><b>Bước 9. Phân Tích Quy Trình Nghiệp Vụ (Business Process Analysis)</b> [Bấm để xem]</summary>
+
+### Phân tích Chi tiết Quy trình Nghiệp vụ: Từ Đặt xe đến Hoàn thành chuyến đi
+
+Quy trình nghiệp vụ cốt lõi của hệ thống CAB System mô tả toàn bộ dòng chảy thông tin và sự tương tác giữa Khách hàng, Tài xế và Hệ thống qua 4 giai đoạn chính:
+
+#### Giai đoạn 1: Khởi tạo Yêu cầu Đặt xe (Customer Request Phase)
+1. **Khách hàng** chọn vị trí đón (mặc định lấy theo GPS hoặc nhập thủ công) và nhập địa chỉ điểm đến.
+2. **Hệ thống** tiếp nhận tọa độ, tính toán khoảng cách di chuyển, dự báo thời gian và tự động quy đổi cước phí cho các loại hình dịch vụ (Xe 4 chỗ, Xe 7 chỗ, Xe máy).
+3. **Khách hàng** chọn phương thức thanh toán (Tiền mặt hoặc Ví/Thẻ điện tử), áp dụng mã giảm giá (nếu có) và nhấn nút **"Đặt xe"**.
+4. **Hệ thống** kiểm tra tính hợp lệ của yêu cầu và tạo một bản ghi chuyến đi mới trong cơ sở dữ liệu với trạng thái **"Chờ tài xế nhận"**.
+
+#### Giai đoạn 2: Khớp chuyến & Điều phối Tài xế (Driver Matching & Dispatching)
+1. **Hệ thống** quét danh sách các tài xế đang ở trạng thái "Sẵn sàng" (Online) trong bán kính quanh điểm đón (ví dụ: 3 km).
+2. **Hệ thống** chọn tài xế phù hợp nhất và phát thông báo mời nhận chuyến kèm thông tin điểm đón, điểm đến và cước phí ước tính.
+3. **Xử lý phản hồi từ Tài xế:**
+   * **Trường hợp Tài xế Từ chối (Reject) hoặc Quá thời gian phản hồi (15 giây):**
+     * Hệ thống ghi nhận tài xế này đã bỏ qua chuyến đi.
+     * Hệ thống ngay lập tức chuyển thông báo mời nhận chuyến sang tài xế tiếp theo trong danh sách ưu tiên.
+   * **Trường hợp Tất cả Tài xế trong khu vực đều Từ chối / Không có tài xế rảnh:**
+     * Hệ thống thử lại tối đa 3 lần tìm kiếm. Nếu vẫn không có tài xế, hệ thống phát thông báo *"Rất tiếc, hiện chưa tìm thấy tài xế rảnh quanh khu vực của bạn"*, tự động hủy yêu cầu và kết thúc quy trình.
+   * **Trường hợp Tài xế Đồng ý (Accept):**
+     * Hệ thống lập tức khóa trạng thái của tài xế sang "Bận" (tránh bị gán chuyến trùng).
+     * Cập nhật trạng thái chuyến đi sang **"Tài xế đang đến đón"**.
+     * Gửi thông báo ghép chuyến thành công cho Khách hàng kèm thông tin tài xế, biển số xe, số điện thoại và vị trí xe di chuyển realtime trên bản đồ.
+
+#### Giai đoạn 3: Thực hiện Chuyến đi & Xử lý Ngoại lệ (Trip Execution Phase)
+1. **Tài xế** di chuyển tới điểm đón khách. Khi tới nơi, tài xế bấm nút **"Đã đến điểm đón"** trên ứng dụng.
+2. **Hệ thống** tự động gửi thông báo push/SMS nhắc Khách hàng ra xe.
+3. **Xử lý phát sinh tại Điểm đón:**
+   * **Nếu Khách hàng hủy chuyến (Cancel):** Khách hàng chọn lý do hủy trên ứng dụng. Hệ thống cập nhật trạng thái chuyến sang "Đã hủy bởi Khách hàng". Nếu hủy sau 3 phút kể từ khi tài xế nhận chuyến, hệ thống sẽ tự động ghi nhận một khoản phí phạt hủy chuyến vào lượt đặt tiếp theo của khách hàng.
+   * **Nếu Khách hàng không xuất hiện (No-show):** Sau 10 phút chờ tại điểm đón, tài xế có quyền chọn **"Hủy chuyến do khách không đến"**. Hệ thống xác nhận tọa độ GPS của tài xế khớp với điểm đón và đánh dấu chuyến đi thất bại.
+4. **Khi Khách hàng lên xe:** Tài xế bấm nút **"Bắt đầu chuyến đi"**. Hệ thống chuyển trạng thái sang **"Đang di chuyển"** và mở bản đồ dẫn đường cho tài xế.
+5. **Tài xế** chở khách hàng di chuyển đến điểm trả.
+
+#### Giai đoạn 4: Hoàn thành & Thanh toán (Completion & Payment Phase)
+1. Khi đến điểm trả khách, Tài xế bấm nút **"Hoàn thành chuyến đi"**. Hệ thống cập nhật trạng thái chuyến sang **"Chờ thanh toán"**.
+2. **Xử lý luồng Thanh toán theo phương thức đã chọn:**
+   * **Trường hợp 1: Thanh toán Tiền mặt (Cash)**
+     * Khách hàng trả tiền mặt đúng số tiền hiển thị trên màn hình cho Tài xế.
+     * Tài xế nhận đủ tiền và bấm nút **"Xác nhận đã thu tiền"** trên ứng dụng.
+   * **Trường hợp 2: Thanh toán qua Cổng điện tử / Ví / Thẻ (Online Payment)**
+     * Hệ thống tự động kích hoạt API Cổng thanh toán để trừ tiền từ tài khoản của Khách hàng.
+     * *Nếu giao dịch thành công:* Hệ thống báo thành công cho cả 2 bên.
+     * *Nếu giao dịch thất bại (Tài khoản không đủ tiền, lỗi cổng thanh toán):* Hệ thống phát cảnh báo lỗi và tự động chuyển hình thức thanh toán sang Tiền mặt để Tài xế thu trực tiếp.
+3. **Kết thúc Chuyến đi:**
+   * Hệ thống cập nhật trạng thái chuyến đi sang **"Đã hoàn tất"**.
+   * Hệ thống tính toán và tự động cộng tiền cước vào ví của Tài xế (sau khi trừ chiết khấu sàn).
+   * Hệ thống gửi hóa đơn điện tử vào ứng dụng Khách hàng và hiển thị giao diện để Khách hàng **Đánh giá ⭐ / Gửi phản hồi** về chuyến đi.
+   * Trạng thái tài xế được khôi phục về **"Sẵn sàng"** để tiếp tục nhận các chuyến đi mới.
+
+</details>
+<details>
+<summary><b>Bước 10. Phân Tích Các Quy Tắc Nghiệp Vụ (Business Rules)</b> [Bấm để xem]</summary>
+
+### Các Quy Tắc Nghiệp Vụ Cốt Lõi Của Hệ Thống (CAB System)
+
+Nghiệp vụ hệ thống được chi phối bởi các quy tắc ràng buộc chặt chẽ nhằm đảm bảo tính công bằng, tối ưu trải nghiệm người dùng và an toàn vận hành.
+
+#### 1. Quy tắc Điều phối & Thuật toán Ưu tiên Phát chuyến (Dispatching Rules - BR_DIS)
+* **BR_DIS_01 (Trạng thái Tài xế):** Chỉ những tài xế đang ở trạng thái **Online (Sẵn sàng nhận chuyến)**, không ở trong chuyến đi khác và thiết bị đang bật vị trí (GPS) mới được tham gia vào luồng điều phối.
+* **BR_DIS_02 (Bán kính Quét):** Hệ thống chỉ phát thông báo chuyến đi cho tài xế nằm trong bán kính quy định (ví dụ: tối đa 3 - 5 km từ điểm đón).
+* **BR_DIS_03 (Điểm Trọng số Đề xuất):** Khi có nhiều tài xế rảnh xung quanh, hệ thống ưu tiên đề xuất chuyến đi dựa trên công thức tính điểm tổng hợp:
+  $$\text{Điểm ưu tiên} = f(\text{Khoảng cách gần nhất}) + f(\text{Đánh giá Rating ⭐ cao}) + f(\text{Tỷ lệ nhận chuyến / Acceptance Rate high})$$
+* **BR_DIS_04 (Thời gian Phản hồi):** Tài xế có đúng **15 giây** để bấm "Chấp nhận" chuyến đi. Sau 15 giây không thao tác, hệ thống coi như tài xế "Từ chối" và tự động gán lượt cho tài xế tiếp theo.
+* **BR_DIS_05 (Phạt Trôi chuyến):** Tài xế bỏ trôi hoặc từ chối liên tiếp 3 chuyến sẽ bị hệ thống tự động chuyển sang trạng thái **Offline (Tạm khóa nhận chuyến)** trong 15 phút.
+
+#### 2. Quy tắc Tính Cước phí & Phụ phí (Pricing & Fare Rules - BR_PRI)
+* **BR_PRI_01 (Cước cơ bản):** Giá cước chuyến đi tính theo công thức: 
+  $$\text{Tổng tiền} = \text{Giá mở cửa} + (\text{Khoảng cách} \times \text{Đơn giá/km}) + \text{Phụ phí (Giờ cao điểm/Thời tiết/Đêm)}$$
+* **BR_PRI_02 (Khóa giá trước):** Giá tiền hiển thị lúc Khách hàng bấm "Xác nhận đặt xe" là giá cố định (Upfront Pricing). Tài xế không được thu thêm tiền trừ trường hợp khách hàng chủ động thay đổi lộ trình/điểm đến giữa chừng.
+* **BR_PRI_03 (Phí Hủy chuyến):** 
+  * Khách hàng hủy chuyến trong vòng 3 phút đầu kể từ khi tài xế nhận chuyến: **Miễn phí**.
+  * Khách hàng hủy chuyến sau 3 phút hoặc sau khi tài xế đã tới điểm đón: **Áp dụng phí phạt hủy chuyến** (trừ trực tiếp vào ví/thẻ hoặc ghi nợ lượt sau).
+
+#### 3. Quy tắc Quản lý Tài khoản & Quyền hạn (Account & Privilege Rules - BR_ACC)
+* **BR_ACC_01 (Duyệt Tài xế):** Tài khoản Tài xế chỉ được phép bật trạng thái "Sẵn sàng" sau khi Nhân viên vận hành (Admin) đã xác minh đủ giấy tờ pháp lý (Giao diện bằng lái, Đăng ký xe, Bảo hiểm, Tình trạng phương tiện).
+* **BR_ACC_02 (Khóa Tài khoản tự động):** Tài xế có điểm đánh giá trung bình (Rating) bị tụt xuống dưới **4.0/5.0 ⭐** (dựa trên 50 chuyến gần nhất) sẽ bị tạm đình chỉ tài khoản để đào tạo lại.
+
+#### 4. Quy tắc Thanh toán & Chiết khấu (Payment Rules - BR_PAY)
+* **BR_PAY_01 (Chiết khấu Sàn):** Hệ thống tự động trừ % tiền hoa hồng nền tảng (ví dụ: 20%) trên tổng cước phí ngay khi chuyến đi chuyển sang trạng thái "Đã hoàn tất".
+* **BR_PAY_02 (Rút tiền Ví tài xế):** Ví tài xế phải duy trì số dư tối thiểu (ví dụ: 100.000 VNĐ) để nhận các chuyến thanh toán bằng tiền mặt.
+* **BR_PAY_03 (Cơ chế Dự phòng Lỗi):** Nếu thanh toán qua Ví/Cổng điện tử thất bại do lỗi hệ thống ngân hàng hoặc ví hết tiền, giao dịch bắt buộc chuyển sang hình thức **Thanh toán Tiền mặt**.
+
+#### 5. Quy tắc An toàn & Bảo mật (Safety & Security Rules - BR_SAF)
+* **BR_SAF_01 (Mật mã Số điện thoại):** Hệ thống sử dụng số điện thoại ảo (Masked Phone) khi Khách hàng và Tài xế liên lạc với nhau để bảo vệ thông tin cá nhân.
+* **BR_SAF_02 (Cảnh báo Giám sát):** Nếu chuyến đi đang trong trạng thái "Đang di chuyển" mà tọa độ GPS không thay đổi quá 10 phút ngoài lộ trình dự kiến, hệ thống tự động phát cảnh báo bất thường lên màn hình Giám sát của Nhân viên vận hành.
+
+</details>
