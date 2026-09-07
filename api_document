@@ -1,1 +1,497 @@
+openapi: 3.0.0
 
+info:
+  title: CAB System API
+  description: |
+    REST API cho hệ thống đặt xe trực tuyến (CAB System - MVP 7 tuần).
+
+    Hỗ trợ:
+      - Xác thực người dùng (Customer, Driver, Admin)
+      - Đặt xe
+      - Điều phối tài xế
+      - Theo dõi chuyến đi
+      - Thanh toán
+      - Đánh giá tài xế
+
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local Development Server
+
+tags:
+  - name: Authentication
+  - name: Rides
+  - name: Drivers
+  - name: Payments
+  - name: Ratings
+
+security:
+  - BearerAuth: []
+
+paths:
+
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register new account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Account created
+        '400':
+          description: Invalid request
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+
+  /rides:
+    post:
+      tags:
+        - Rides
+      summary: Create ride request
+      operationId: createRide
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRideRequest'
+      responses:
+        '201':
+          description: Ride created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ride'
+
+    get:
+      tags:
+        - Rides
+      summary: Get ride history
+      operationId: getRideHistory
+      responses:
+        '200':
+          description: List of rides
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ride'
+
+  /rides/{rideId}:
+    get:
+      tags:
+        - Rides
+      summary: Get ride detail
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+      responses:
+        '200':
+          description: Ride information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ride'
+        '404':
+          description: Ride not found
+
+  /rides/{rideId}/tracking:
+    get:
+      tags:
+        - Rides
+      summary: Track ride in real time
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+      responses:
+        '200':
+          description: Driver location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackingResponse'
+
+  /rides/{rideId}/cancel:
+    post:
+      tags:
+        - Rides
+      summary: Cancel ride
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelRideRequest'
+      responses:
+        '200':
+          description: Ride cancelled
+
+  /driver/location:
+    patch:
+      tags:
+        - Drivers
+      summary: Update driver location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Location'
+      responses:
+        '200':
+          description: Location updated
+
+  /driver/rides/{rideId}/accept:
+    post:
+      tags:
+        - Drivers
+      summary: Accept ride
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+      responses:
+        '200':
+          description: Ride accepted
+
+  /driver/rides/{rideId}/reject:
+    post:
+      tags:
+        - Drivers
+      summary: Reject ride
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectRideRequest'
+      responses:
+        '200':
+          description: Ride rejected
+
+  /driver/rides/{rideId}/status:
+    patch:
+      tags:
+        - Drivers
+      summary: Update ride status
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusUpdateRequest'
+      responses:
+        '200':
+          description: Status updated
+
+  /rides/{rideId}/payment:
+    post:
+      tags:
+        - Payments
+      summary: Create payment
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '200':
+          description: Payment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+
+  /payments/callback:
+    post:
+      tags:
+        - Payments
+      summary: Payment gateway callback
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCallback'
+      responses:
+        '200':
+          description: Callback processed
+
+  /rides/{rideId}/rating:
+    post:
+      tags:
+        - Ratings
+      summary: Rate driver
+      parameters:
+        - $ref: '#/components/parameters/RideId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingRequest'
+      responses:
+        '201':
+          description: Rating submitted
+
+components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    RideId:
+      name: rideId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+  schemas:
+
+    RegisterRequest:
+      type: object
+      required:
+        - phone
+        - password
+        - role
+      properties:
+        phone:
+          type: string
+        password:
+          type: string
+          format: password
+        role:
+          type: string
+          enum:
+            - customer
+            - driver
+
+    LoginRequest:
+      type: object
+      required:
+        - phone
+        - password
+      properties:
+        phone:
+          type: string
+        password:
+          type: string
+          format: password
+
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+
+    CreateRideRequest:
+      type: object
+      required:
+        - pickup_location
+        - destination_location
+        - vehicle_type
+        - payment_method
+      properties:
+        pickup_location:
+          $ref: '#/components/schemas/Location'
+        destination_location:
+          $ref: '#/components/schemas/Location'
+        vehicle_type:
+          type: string
+          enum:
+            - car_4
+            - car_7
+        payment_method:
+          type: string
+          enum:
+            - cash
+            - momo
+            - vnpay
+
+    Ride:
+      type: object
+      properties:
+        ride_id:
+          type: integer
+        status:
+          type: string
+          enum:
+            - SEARCHING_DRIVER
+            - DRIVER_ASSIGNED
+            - DRIVER_ARRIVED
+            - PICKED_UP
+            - IN_PROGRESS
+            - COMPLETED
+            - CANCELLED
+            - DRIVER_NOT_FOUND
+        estimated_fare:
+          type: number
+        estimated_distance_km:
+          type: number
+        estimated_time_min:
+          type: integer
+        driver:
+          $ref: '#/components/schemas/Driver'
+
+    Driver:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        vehicle_plate:
+          type: string
+        vehicle_type:
+          type: string
+
+    TrackingResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        eta_min:
+          type: integer
+        driver_location:
+          $ref: '#/components/schemas/Location'
+
+    Location:
+      type: object
+      required:
+        - lat
+        - lng
+      properties:
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+
+    CancelRideRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+
+    RejectRideRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+
+    StatusUpdateRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - DRIVER_ARRIVED
+            - PICKED_UP
+            - IN_PROGRESS
+            - COMPLETED
+
+    PaymentRequest:
+      type: object
+      required:
+        - payment_method
+      properties:
+        payment_method:
+          type: string
+          enum:
+            - cash
+            - momo
+            - vnpay
+
+    PaymentResponse:
+      type: object
+      properties:
+        payment_id:
+          type: integer
+        payment_url:
+          type: string
+        payment_status:
+          type: string
+          enum:
+            - PENDING
+            - SUCCESS
+            - FAILED
+
+    PaymentCallback:
+      type: object
+      properties:
+        payment_id:
+          type: integer
+        transaction_id:
+          type: string
+        status:
+          type: string
+
+    RatingRequest:
+      type: object
+      required:
+        - rating
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error_code:
+          type: string
+        message:
+          type: string
