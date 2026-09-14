@@ -1,0 +1,52 @@
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Đăng ký tài khoản mới (Register new account)
+      description: Tạo tài khoản mới cho Khách hàng (Customer) hoặc Tài xế (Driver).
+      operationId: registerUser
+      security: [] # Không yêu cầu token để đăng ký
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Tài khoản được tạo thành công.
+        '400':
+          description: Dữ liệu đầu vào không hợp lệ (ví dụ thiếu số điện thoại, mật khẩu yếu).
+          content:
+            application/json:
+              schema:
+                $ref: '../openapi.yaml#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Đăng nhập hệ thống (Login)
+      description: Đăng nhập bằng số điện thoại và mật khẩu. Nếu thành công sẽ trả về JWT Access Token để sử dụng cho các API khác.
+      operationId: loginUser
+      security: [] # Không yêu cầu token để đăng nhập
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Đăng nhập thành công, trả về Access Token.
+          content:
+            application/json:
+              schema:
+                $ref: '../openapi.yaml#/components/schemas/AuthResponse'
+        '401':
+          description: Thông tin đăng nhập không chính xác (Sai số điện thoại hoặc mật khẩu).
+          content:
+            application/json:
+              schema:
+                $ref: '../openapi.yaml#/components/schemas/Error'
