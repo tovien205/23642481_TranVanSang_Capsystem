@@ -12,7 +12,6 @@ info:
       - Theo dõi chuyến đi
       - Thanh toán
       - Đánh giá tài xế
-
   version: 1.0.0
 
 servers:
@@ -29,248 +28,49 @@ tags:
 security:
   - BearerAuth: []
 
+# --- PHÂN ĐIỀU HƯỚNG TỚI CÁC FILE API CON ---
 paths:
-
+  # Module Authentication
   /auth/register:
-    post:
-      tags:
-        - Authentication
-      summary: Register new account
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterRequest'
-      responses:
-        '201':
-          description: Account created
-        '400':
-          description: Invalid request
-
+    $ref: './api/fr00_auth.yaml#/paths/~1auth~1register'
   /auth/login:
-    post:
-      tags:
-        - Authentication
-      summary: Login
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequest'
-      responses:
-        '200':
-          description: Login success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '401':
-          description: Invalid credentials
+    $ref: './api/fr00_auth.yaml#/paths/~1auth~1login'
 
+  # Module Rides (Khách hàng đặt xe)
   /rides:
-    post:
-      tags:
-        - Rides
-      summary: Create ride request
-      operationId: createRide
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateRideRequest'
-      responses:
-        '201':
-          description: Ride created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Ride'
-
-    get:
-      tags:
-        - Rides
-      summary: Get ride history
-      operationId: getRideHistory
-      responses:
-        '200':
-          description: List of rides
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Ride'
-
+    $ref: './api/fr01_booking.yaml#/paths/~1rides'
   /rides/{rideId}:
-    get:
-      tags:
-        - Rides
-      summary: Get ride detail
-      parameters:
-        - $ref: '#/components/parameters/RideId'
-      responses:
-        '200':
-          description: Ride information
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Ride'
-        '404':
-          description: Ride not found
-
-  /rides/{rideId}/tracking:
-    get:
-      tags:
-        - Rides
-      summary: Track ride in real time
-      parameters:
-        - $ref: '#/components/parameters/RideId'
-      responses:
-        '200':
-          description: Driver location
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TrackingResponse'
-
+    $ref: './api/fr01_booking.yaml#/paths/~1rides~1{rideId}'
   /rides/{rideId}/cancel:
-    post:
-      tags:
-        - Rides
-      summary: Cancel ride
-      parameters:
-        - $ref: '#/components/parameters/RideId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CancelRideRequest'
-      responses:
-        '200':
-          description: Ride cancelled
+    $ref: './api/fr01_booking.yaml#/paths/~1rides~1{rideId}~1cancel'
 
+  # Module Dispatch & Tracking (Khớp chuyến & Theo dõi)
+  /rides/{rideId}/tracking:
+    $ref: './api/fr03_tracking.yaml#/paths/~1rides~1{rideId}~1tracking'
   /driver/location:
-    patch:
-      tags:
-        - Drivers
-      summary: Update driver location
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Location'
-      responses:
-        '200':
-          description: Location updated
-
+    $ref: './api/fr03_tracking.yaml#/paths/~1driver~1location'
+  
   /driver/rides/{rideId}/accept:
-    post:
-      tags:
-        - Drivers
-      summary: Accept ride
-      parameters:
-        - $ref: '#/components/parameters/RideId'
-      responses:
-        '200':
-          description: Ride accepted
-
+    $ref: './api/fr02_dispatch.yaml#/paths/~1driver~1rides~1{rideId}~1accept'
   /driver/rides/{rideId}/reject:
-    post:
-      tags:
-        - Drivers
-      summary: Reject ride
-      parameters:
-        - $ref: '#/components/parameters/RideId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RejectRideRequest'
-      responses:
-        '200':
-          description: Ride rejected
+    $ref: './api/fr02_dispatch.yaml#/paths/~1driver~1rides~1{rideId}~1reject'
 
+  # Module Trip Lifecycle (Tài xế cập nhật trạng thái)
   /driver/rides/{rideId}/status:
-    patch:
-      tags:
-        - Drivers
-      summary: Update ride status
-      parameters:
-        - $ref: '#/components/parameters/RideId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/StatusUpdateRequest'
-      responses:
-        '200':
-          description: Status updated
+    $ref: './api/fr04_trip_lifecycle.yaml#/paths/~1driver~1rides~1{rideId}~1status'
 
+  # Module Payment (Thanh toán)
   /rides/{rideId}/payment:
-    post:
-      tags:
-        - Payments
-      summary: Create payment
-      parameters:
-        - $ref: '#/components/parameters/RideId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PaymentRequest'
-      responses:
-        '200':
-          description: Payment created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaymentResponse'
-
+    $ref: './api/fr05_payment.yaml#/paths/~1rides~1{rideId}~1payment'
   /payments/callback:
-    post:
-      tags:
-        - Payments
-      summary: Payment gateway callback
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PaymentCallback'
-      responses:
-        '200':
-          description: Callback processed
+    $ref: './api/fr05_payment.yaml#/paths/~1payments~1callback'
 
+  # Module Rating (Đánh giá)
   /rides/{rideId}/rating:
-    post:
-      tags:
-        - Ratings
-      summary: Rate driver
-      parameters:
-        - $ref: '#/components/parameters/RideId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RatingRequest'
-      responses:
-        '201':
-          description: Rating submitted
+    $ref: './api/fr06_rating.yaml#/paths/~1rides~1{rideId}~1rating'
 
+# --- KHAI BÁO CÁC SCHEMA (DỮ LIỆU) DÙNG CHUNG ---
 components:
-
   securitySchemes:
     BearerAuth:
       type: http
@@ -287,13 +87,9 @@ components:
         format: int64
 
   schemas:
-
     RegisterRequest:
       type: object
-      required:
-        - phone
-        - password
-        - role
+      required: [phone, password, role]
       properties:
         phone:
           type: string
@@ -302,15 +98,11 @@ components:
           format: password
         role:
           type: string
-          enum:
-            - customer
-            - driver
+          enum: [customer, driver]
 
     LoginRequest:
       type: object
-      required:
-        - phone
-        - password
+      required: [phone, password]
       properties:
         phone:
           type: string
@@ -331,11 +123,7 @@ components:
 
     CreateRideRequest:
       type: object
-      required:
-        - pickup_location
-        - destination_location
-        - vehicle_type
-        - payment_method
+      required: [pickup_location, destination_location, vehicle_type, payment_method]
       properties:
         pickup_location:
           $ref: '#/components/schemas/Location'
@@ -343,15 +131,10 @@ components:
           $ref: '#/components/schemas/Location'
         vehicle_type:
           type: string
-          enum:
-            - car_4
-            - car_7
+          enum: [car_4, car_7]
         payment_method:
           type: string
-          enum:
-            - cash
-            - momo
-            - vnpay
+          enum: [cash, momo, vnpay]
 
     Ride:
       type: object
@@ -360,15 +143,7 @@ components:
           type: integer
         status:
           type: string
-          enum:
-            - SEARCHING_DRIVER
-            - DRIVER_ASSIGNED
-            - DRIVER_ARRIVED
-            - PICKED_UP
-            - IN_PROGRESS
-            - COMPLETED
-            - CANCELLED
-            - DRIVER_NOT_FOUND
+          enum: [SEARCHING_DRIVER, DRIVER_ASSIGNED, DRIVER_ARRIVED, PICKED_UP, IN_PROGRESS, COMPLETED, CANCELLED, DRIVER_NOT_FOUND]
         estimated_fare:
           type: number
         estimated_distance_km:
@@ -404,9 +179,7 @@ components:
 
     Location:
       type: object
-      required:
-        - lat
-        - lng
+      required: [lat, lng]
       properties:
         lat:
           type: number
@@ -429,28 +202,19 @@ components:
 
     StatusUpdateRequest:
       type: object
-      required:
-        - status
+      required: [status]
       properties:
         status:
           type: string
-          enum:
-            - DRIVER_ARRIVED
-            - PICKED_UP
-            - IN_PROGRESS
-            - COMPLETED
+          enum: [DRIVER_ARRIVED, PICKED_UP, IN_PROGRESS, COMPLETED]
 
     PaymentRequest:
       type: object
-      required:
-        - payment_method
+      required: [payment_method]
       properties:
         payment_method:
           type: string
-          enum:
-            - cash
-            - momo
-            - vnpay
+          enum: [cash, momo, vnpay]
 
     PaymentResponse:
       type: object
@@ -461,10 +225,7 @@ components:
           type: string
         payment_status:
           type: string
-          enum:
-            - PENDING
-            - SUCCESS
-            - FAILED
+          enum: [PENDING, SUCCESS, FAILED]
 
     PaymentCallback:
       type: object
@@ -478,8 +239,7 @@ components:
 
     RatingRequest:
       type: object
-      required:
-        - rating
+      required: [rating]
       properties:
         rating:
           type: integer
