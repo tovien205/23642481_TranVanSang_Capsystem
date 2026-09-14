@@ -1,0 +1,32 @@
+paths:
+  /driver/rides/{rideId}/accept:
+    post:
+      tags:
+        - Drivers
+      summary: Tài xế nhận chuyến (Accept ride)
+      description: Tài xế xác nhận đồng ý nhận chuyến đi được hệ thống phân công.
+      operationId: acceptRide
+      parameters:
+        - $ref: '../openapi.yaml#/components/parameters/RideId'
+      responses:
+        '200':
+          description: Nhận chuyến thành công, trạng thái chuyến đi chuyển sang DRIVER_ASSIGNED.
+
+  /driver/rides/{rideId}/reject:
+    post:
+      tags:
+        - Drivers
+      summary: Tài xế từ chối chuyến (Reject ride)
+      description: Tài xế từ chối nhận chuyến đi. Hệ thống sẽ tự động gán chuyến này cho tài xế phù hợp tiếp theo.
+      operationId: rejectRide
+      parameters:
+        - $ref: '../openapi.yaml#/components/parameters/RideId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/RejectRideRequest'
+      responses:
+        '200':
+          description: Từ chối chuyến thành công.
