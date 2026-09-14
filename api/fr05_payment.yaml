@@ -1,0 +1,41 @@
+paths:
+  /rides/{rideId}/payment:
+    post:
+      tags:
+        - Payments
+      summary: Tạo yêu cầu thanh toán (Create payment)
+      description: Khởi tạo quy trình thanh toán cho chuyến đi đã hoàn thành. Nếu chọn ví điện tử (momo, vnpay), API sẽ trả về URL để Khách hàng chuyển hướng sang trang thanh toán.
+      operationId: createPayment
+      parameters:
+        - $ref: '../openapi.yaml#/components/parameters/RideId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/PaymentRequest'
+      responses:
+        '200':
+          description: Yêu cầu thanh toán được tạo thành công. Trả về chi tiết và link thanh toán.
+          content:
+            application/json:
+              schema:
+                $ref: '../openapi.yaml#/components/schemas/PaymentResponse'
+
+  /payments/callback:
+    post:
+      tags:
+        - Payments
+      summary: Webhook nhận kết quả từ Cổng thanh toán (Payment gateway callback)
+      description: Cổng thanh toán bên thứ 3 (Momo/VNPAY) sẽ gọi API này để báo kết quả giao dịch (Thành công/Thất bại) về hệ thống CAB.
+      operationId: paymentCallback
+      security: [] # API này mở public cho Cổng thanh toán gọi vào
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/PaymentCallback'
+      responses:
+        '200':
+          description: Hệ thống CAB đã ghi nhận thành công kết quả callback.
