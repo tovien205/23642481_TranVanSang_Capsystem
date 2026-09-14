@@ -1,0 +1,72 @@
+paths:
+  /rides:
+    post:
+      tags:
+        - Rides
+      summary: Tạo yêu cầu đặt xe mới (Create ride request)
+      description: Khách hàng gửi yêu cầu đặt xe bao gồm điểm đón, điểm đến, loại xe và phương thức thanh toán.
+      operationId: createRide
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/CreateRideRequest'
+      responses:
+        '201':
+          description: Yêu cầu đặt xe được tạo thành công.
+          content:
+            application/json:
+              schema:
+                $ref: '../openapi.yaml#/components/schemas/Ride'
+    get:
+      tags:
+        - Rides
+      summary: Xem lịch sử chuyến đi (Get ride history)
+      description: Lấy danh sách các chuyến đi mà Khách hàng đã thực hiện.
+      operationId: getRideHistory
+      responses:
+        '200':
+          description: Trả về danh sách chuyến đi.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../openapi.yaml#/components/schemas/Ride'
+
+  /rides/{rideId}:
+    get:
+      tags:
+        - Rides
+      summary: Xem chi tiết một chuyến đi (Get ride detail)
+      description: Lấy thông tin chi tiết của một chuyến đi cụ thể dựa vào rideId.
+      parameters:
+        - $ref: '../openapi.yaml#/components/parameters/RideId'
+      responses:
+        '200':
+          description: Trả về thông tin chi tiết chuyến đi.
+          content:
+            application/json:
+              schema:
+                $ref: '../openapi.yaml#/components/schemas/Ride'
+        '404':
+          description: Không tìm thấy chuyến đi (Ride not found).
+
+  /rides/{rideId}/cancel:
+    post:
+      tags:
+        - Rides
+      summary: Khách hàng hủy chuyến đi (Cancel ride)
+      description: Khách hàng yêu cầu hủy chuyến đi và cung cấp lý do hủy.
+      parameters:
+        - $ref: '../openapi.yaml#/components/parameters/RideId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/CancelRideRequest'
+      responses:
+        '200':
+          description: Hủy chuyến thành công.
