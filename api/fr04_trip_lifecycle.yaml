@@ -1,0 +1,24 @@
+paths:
+  /driver/rides/{rideId}/status:
+    patch:
+      tags:
+        - Drivers
+      summary: Cập nhật trạng thái chuyến đi (Update ride status)
+      description: |
+        Tài xế cập nhật tuần tự các mốc trạng thái của chuyến đi:
+        - `DRIVER_ARRIVED`: Đã đến điểm đón.
+        - `PICKED_UP`: Đã đón khách lên xe.
+        - `IN_PROGRESS`: Đang di chuyển (Bắt đầu tính phí/km).
+        - `COMPLETED`: Đã đến nơi, kết thúc chuyến đi và chờ thanh toán.
+      operationId: updateRideStatus
+      parameters:
+        - $ref: '../openapi.yaml#/components/parameters/RideId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/StatusUpdateRequest'
+      responses:
+        '200':
+          description: Trạng thái chuyến đi được cập nhật thành công.
