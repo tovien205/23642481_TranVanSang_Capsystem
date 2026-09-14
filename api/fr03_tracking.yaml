@@ -1,0 +1,34 @@
+paths:
+  /rides/{rideId}/tracking:
+    get:
+      tags:
+        - Rides
+      summary: Theo dõi vị trí tài xế (Track ride in real time)
+      description: Khách hàng gọi API này để lấy thông tin tọa độ GPS mới nhất của tài xế và thời gian dự kiến đến (ETA).
+      operationId: trackRide
+      parameters:
+        - $ref: '../openapi.yaml#/components/parameters/RideId'
+      responses:
+        '200':
+          description: Trả về tọa độ tài xế và trạng thái chuyến đi.
+          content:
+            application/json:
+              schema:
+                $ref: '../openapi.yaml#/components/schemas/TrackingResponse'
+
+  /driver/location:
+    patch:
+      tags:
+        - Drivers
+      summary: Cập nhật vị trí tài xế (Update driver location)
+      description: Ứng dụng của tài xế gọi API này theo chu kỳ (VD_ mỗi 5 giây) để cập nhật tọa độ GPS mới nhất lên hệ thống.
+      operationId: updateDriverLocation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/Location'
+      responses:
+        '200':
+          description: Đã cập nhật tọa độ thành công.
